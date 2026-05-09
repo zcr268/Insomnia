@@ -29,7 +29,7 @@ Insomnia has built-in support for AI coding tools with two types of monitoring:
 | **Claude Code** | Hook-based | Knows when Claude is *actively working* (not just open). Wakes on tool use, sleeps when idle. |
 | **Cursor** | Process-based | Keeps awake while Cursor is running |
 | **Aider** | Process-based | Keeps awake while `aider.exe` is running |
-| **OpenAI Codex CLI** | Process-based | Keeps awake while `codex.exe` is running |
+| **OpenAI Codex** | Hook-based | Knows when Codex is *actively working* (CLI, VS Code, or desktop). Uses Codex's `notify` config plus Codex session activity to track active work. |
 | **Ollama** | Process-based | Keeps awake during local AI model inference |
 
 The Claude Code integration is **hook-based** — it hooks directly into Claude Code's event system so your PC stays awake only while Claude is actively running tools and generating code, not when it's sitting idle waiting for your next prompt. Once Claude finishes, Insomnia releases within 3 minutes of inactivity.
@@ -108,6 +108,10 @@ When you enable the Claude Code integration, Insomnia adds hooks to `~/.claude/s
 - `SessionEnd` → signal idle (allow sleep)
 
 This means your PC stays awake precisely while Claude is doing work — reading files, running commands, writing code — and goes back to normal the moment it stops. No wasted power, no interrupted sessions.
+
+### OpenAI Codex Integration Details
+
+When you enable the OpenAI Codex integration, Insomnia adds a `notify` hook to `~/.codex/config.toml` for Codex CLI activity. For Codex surfaces that run through the persistent app server, including the VS Code extension and standalone app, Insomnia also watches Codex's local session transcript activity in `~/.codex/sessions`. Codex updates those transcripts during turns, and Insomnia treats those writes as active work without keeping the PC awake just because `codex.exe` is open.
 
 ## Configuration
 

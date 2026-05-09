@@ -57,10 +57,10 @@ const INTEGRATIONS = [
   },
   {
     id: 'codex-cli',
-    name: 'OpenAI Codex CLI',
-    description: 'Keeps PC awake while Codex is running',
-    hookBased: false,
-    processNames: ['codex.exe', 'codex'],
+    name: 'OpenAI Codex',
+    description: 'Keeps PC awake while Codex is actively working (CLI, VS Code, or desktop)',
+    hookBased: true,
+    processNames: ['codex.exe'],
     icon: 'codex'
   },
   {
@@ -272,6 +272,121 @@ function watchSessionFile() {
   } catch {}
 }
 
+// ── Codex App / VS Code Activity Watcher ──────────────────────────────────────
+// Codex surfaces that run through `codex.exe app-server` do not fire the notify
+// hook from config.toml. Avoid watching Codex SQLite DBs here: they can update
+// while the app server is idle. Session JSONL files track actual turn activity.
+const CODEX_SESSIONS_DIR = path.join(os.homedir(), '.codex', 'sessions');
+let codexWatchRetryTimer = null;
+let codexPollInterval = null;
+let codexSessionSnapshots = new Map();
+
+function getFileSnapshot(filePath) {
+  try {
+    const stat = fs.statSync(filePath);
+    return `${stat.mtimeMs}:${stat.size}`;
+  } catch {
+    return null;
+  }
+}
+
+function getCodexSessionFiles() {
+  const files = [];
+  const stack = [CODEX_SESSIONS_DIR];
+  while (stack.length > 0) {
+    const dir = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) stack.push(fullPath);
+      else if (entry.isFile() && entry.name.endsWith('.jsonl')) files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function syncCodexSessionSnapshots() {
+  for (const filePath of getCodexSessionFiles()) {
+    const snapshot = getFileSnapshot(filePath);
+    if (snapshot) codexSessionSnapshots.set(filePath, snapshot);
+  }
+}
+
+function scheduleCodexWatchRetry(delayMs) {
+  if (codexWatchRetryTimer) clearTimeout(codexWatchRetryTimer);
+  codexWatchRetryTimer = setTimeout(() => {
+    codexWatchRetryTimer = null;
+    watchCodexFiles();
+  }, delayMs);
+}
+
+function recordCodexActivity() {
+  const isEnabled = config.watchedIntegrations.some(i => i.id === 'codex-cli' && i.enabled);
+  if (!isEnabled) return;
+  try {
+    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+    let data = { sessions: {} };
+    if (fs.existsSync(SESSIONS_FILE)) {
+      try { data = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8')); } catch {}
+    }
+    if (!data.sessions) data.sessions = {};
+    const key = 'codex-cli:app-server';
+    const nowIso = new Date().toISOString();
+    if (!data.sessions[key]) {
+      data.sessions[key] = { integration: 'codex-cli', session_id: 'app-server', created_at: nowIso };
+    }
+    data.sessions[key].last_activity = nowIso;
+    data.last_updated = nowIso;
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2));
+    checkAgentSessions();
+  } catch {}
+}
+
+function handleCodexSessionFileChange() {
+  let changed = false;
+  const seen = new Set();
+
+  for (const filePath of getCodexSessionFiles()) {
+    seen.add(filePath);
+    const snapshot = getFileSnapshot(filePath);
+    if (!snapshot) continue;
+    if (codexSessionSnapshots.get(filePath) !== snapshot) {
+      codexSessionSnapshots.set(filePath, snapshot);
+      changed = true;
+    }
+  }
+
+  for (const filePath of Array.from(codexSessionSnapshots.keys())) {
+    if (!seen.has(filePath)) codexSessionSnapshots.delete(filePath);
+  }
+
+  if (!changed) return;
+
+  recordCodexActivity();
+}
+
+function watchCodexFiles() {
+  stopCodexWatcher();
+
+  if (!fs.existsSync(CODEX_SESSIONS_DIR)) {
+    scheduleCodexWatchRetry(30000);
+    return;
+  }
+
+  syncCodexSessionSnapshots();
+  codexPollInterval = setInterval(handleCodexSessionFileChange, 5000);
+}
+
+function stopCodexWatcher() {
+  if (codexWatchRetryTimer) { clearTimeout(codexWatchRetryTimer); codexWatchRetryTimer = null; }
+  if (codexPollInterval) { clearInterval(codexPollInterval); codexPollInterval = null; }
+}
+
 // ── Claude Code Hook Setup ─────────────────────────────────────────────────────
 function getClaudeSettingsPath() {
   return path.join(os.homedir(), '.claude', 'settings.json');
@@ -352,6 +467,93 @@ function removeClaudeCodeHooks() {
 
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   } catch {}
+}
+
+// ── Codex Hook Setup ───────────────────────────────────────────────────────────
+// Codex (CLI / VS Code extension / desktop) all read ~/.codex/config.toml.
+// The `notify` field runs a command on agent-turn-complete events — we use it
+// as a heartbeat so Insomnia knows Codex is actively being used, not just sitting open.
+function getCodexConfigPath() {
+  return path.join(os.homedir(), '.codex', 'config.toml');
+}
+
+const INSOMNIA_NOTIFY_MARKER = '# Insomnia notify hook (auto-managed)';
+
+function buildCodexNotifyLine() {
+  const hookPath = HOOK_SCRIPT.replace(/\\/g, '/');
+  return `notify = ["node", "${hookPath}", "stay-awake", "codex-cli"]`;
+}
+
+// Strip lines from a Codex config.
+// mode='setup'   → drop ALL top-level notify lines (Codex only honours one) and our marker line
+// mode='remove'  → drop only our marker line and top-level notify lines pointing at agent-hook.js
+function stripCodexNotify(lines, mode) {
+  const out = [];
+  let inSection = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed === INSOMNIA_NOTIFY_MARKER) continue;
+    if (trimmed.startsWith('[')) {
+      inSection = true;
+      out.push(line);
+      continue;
+    }
+    if (!inSection && /^\s*notify\s*=/.test(line)) {
+      if (mode === 'setup') continue;
+      if (mode === 'remove' && line.includes('agent-hook.js')) continue;
+    }
+    out.push(line);
+  }
+  // Collapse runs of blank lines to a single blank, and trim leading/trailing blanks.
+  const collapsed = [];
+  for (const line of out) {
+    if (line.trim() === '' && collapsed.length > 0 && collapsed[collapsed.length - 1].trim() === '') continue;
+    collapsed.push(line);
+  }
+  while (collapsed.length && collapsed[0].trim() === '') collapsed.shift();
+  while (collapsed.length && collapsed[collapsed.length - 1].trim() === '') collapsed.pop();
+  return collapsed;
+}
+
+function setupCodexHooks() {
+  const configPath = getCodexConfigPath();
+  const dir = path.dirname(configPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  let content = '';
+  try {
+    if (fs.existsSync(configPath)) content = fs.readFileSync(configPath, 'utf8');
+  } catch {}
+
+  const stripped = stripCodexNotify(content.split(/\r?\n/), 'setup');
+
+  // Prepend our notify block; pad with a blank line before any further content.
+  const block = [INSOMNIA_NOTIFY_MARKER, buildCodexNotifyLine()];
+  if (stripped.length > 0) block.push('');
+  const finalLines = [...block, ...stripped];
+
+  fs.writeFileSync(configPath, finalLines.join('\n') + '\n');
+}
+
+function removeCodexHooks() {
+  const configPath = getCodexConfigPath();
+  if (!fs.existsSync(configPath)) return;
+  try {
+    const content = fs.readFileSync(configPath, 'utf8');
+    const lines = stripCodexNotify(content.split(/\r?\n/), 'remove');
+    fs.writeFileSync(configPath, lines.length ? lines.join('\n') + '\n' : '');
+  } catch {}
+}
+
+// ── Hook dispatch ──────────────────────────────────────────────────────────────
+function setupHooksForIntegration(integrationId) {
+  if (integrationId === 'claude-code') setupClaudeCodeHooks();
+  else if (integrationId === 'codex-cli') { setupCodexHooks(); watchCodexFiles(); }
+}
+
+function removeHooksForIntegration(integrationId) {
+  if (integrationId === 'claude-code') removeClaudeCodeHooks();
+  else if (integrationId === 'codex-cli') { removeCodexHooks(); stopCodexWatcher(); }
 }
 
 // ── Tray ───────────────────────────────────────────────────────────────────────
@@ -732,9 +934,7 @@ function setupIPC() {
     }
 
     // Setup hooks if hook-based
-    if (def.hookBased && integrationId === 'claude-code') {
-      setupClaudeCodeHooks();
-    }
+    if (def.hookBased) setupHooksForIntegration(integrationId);
 
     saveConfig();
     checkRunningProcesses();
@@ -746,9 +946,7 @@ function setupIPC() {
     config.watchedIntegrations = config.watchedIntegrations.filter(i => i.id !== integrationId);
 
     // Remove hooks if hook-based
-    if (def?.hookBased && integrationId === 'claude-code') {
-      removeClaudeCodeHooks();
-    }
+    if (def?.hookBased) removeHooksForIntegration(integrationId);
 
     activeIntegrations = activeIntegrations.filter(a => a.id !== integrationId);
     delete processLastSeen[integrationId];
@@ -762,9 +960,9 @@ function setupIPC() {
     if (found) {
       found.enabled = !found.enabled;
       const def = INTEGRATIONS.find(d => d.id === integrationId);
-      if (def?.hookBased && integrationId === 'claude-code') {
-        if (found.enabled) setupClaudeCodeHooks();
-        else removeClaudeCodeHooks();
+      if (def?.hookBased) {
+        if (found.enabled) setupHooksForIntegration(integrationId);
+        else removeHooksForIntegration(integrationId);
       }
       if (!found.enabled) {
         activeIntegrations = activeIntegrations.filter(a => a.id !== integrationId);
@@ -847,6 +1045,7 @@ app.on('before-quit', () => {
   app.isQuitting = true;
   if (pollInterval) clearInterval(pollInterval);
   if (sessionWatcher) { sessionWatcher.close(); sessionWatcher = null; }
+  stopCodexWatcher();
   if (powerSaveId !== null) {
     powerSaveBlocker.stop(powerSaveId);
     powerSaveId = null;
@@ -860,6 +1059,39 @@ app.whenReady().then(() => {
   }
 
   loadConfig();
+
+  // Clean up stale Codex false-positive entries left behind by older builds.
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+      let removed = false;
+      for (const key of Object.keys(data.sessions || {})) {
+        if (key.endsWith(':auto-detected')) { delete data.sessions[key]; removed = true; }
+        if (key === 'codex-cli:vscode') { delete data.sessions[key]; removed = true; }
+      }
+      if (removed) fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2));
+    }
+  } catch {}
+
+  // Sync stored display names with the current INTEGRATIONS table (rename migrations).
+  let configChanged = false;
+  for (const integ of config.watchedIntegrations) {
+    const def = INTEGRATIONS.find(d => d.id === integ.id);
+    if (def && integ.name !== def.name) {
+      integ.name = def.name;
+      configChanged = true;
+    }
+  }
+  if (configChanged) saveConfig();
+
+  // Re-apply hooks for already-enabled hook-based integrations so users who
+  // upgrade get the new wiring without having to toggle the integration off/on.
+  for (const integ of config.watchedIntegrations) {
+    if (!integ.enabled) continue;
+    const def = INTEGRATIONS.find(d => d.id === integ.id);
+    if (def?.hookBased) setupHooksForIntegration(integ.id);
+  }
+
   setupIPC();
   createWindow();
   createTray();
@@ -869,6 +1101,11 @@ app.whenReady().then(() => {
 
   // Watch session file for instant hook-based integration response
   watchSessionFile();
+
+  // Watch Codex session transcripts for VS Code / standalone app activity.
+  if (config.watchedIntegrations.some(i => i.id === 'codex-cli' && i.enabled)) {
+    watchCodexFiles();
+  }
 
   if (manualAwake) evaluateState();
 });
