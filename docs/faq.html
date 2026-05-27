@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — Insomnia: Keep Windows Awake</title>
+  <meta name="description" content="Frequently asked questions about Insomnia — the free Windows app that prevents your PC from sleeping during AI coding sessions, presentations, and long tasks.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="canonical" href="https://stanley-projects.github.io/Insomnia/faq.html">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/assets/icon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="FAQ — Insomnia: Keep Windows Awake">
+  <meta property="og:description" content="Frequently asked questions about Insomnia — the free Windows app that prevents your PC from sleeping during AI coding sessions.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stanley-projects.github.io/Insomnia/faq.html">
+  <meta property="og:image" content="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/docs/screenshot.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FAQ — Insomnia: Keep Windows Awake">
+  <meta name="twitter:description" content="Frequently asked questions about Insomnia — free Windows sleep prevention for developers.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/docs/screenshot.png">
+
+  <!-- Structured Data: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I keep my Windows PC from sleeping?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install Insomnia and add a trigger. Use the manual toggle for immediate effect, add an application as a trigger (stays awake while it runs), or enable an AI integration (stays awake only during active AI work). Insomnia uses Electron's powerSaveBlocker API to prevent Windows from entering sleep mode."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I prevent Windows from sleeping during Claude Code sessions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enable the Claude Code integration in Insomnia. It installs hooks in ~/.claude/settings.json that fire on UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest, and Notification events — keeping Windows awake precisely while Claude is actively running tools and generating code. The PC is allowed to sleep within 3 minutes after Claude finishes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Insomnia work with Cursor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Insomnia polls ~/.cursor/projects/*/agent-transcripts/**/*.jsonl every 5 seconds. These files are only written during active Cursor Agent sessions, so the PC stays awake only while the Agent is actively working — not just because Cursor is open."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Insomnia work with OpenAI Codex?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, via two detection paths: a notify hook in ~/.codex/config.toml for CLI usage, and session transcript polling at ~/.codex/sessions/**/*.jsonl for VS Code extension and standalone app usage. Both signals are combined so all Codex surfaces are covered."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is Insomnia different from setting Windows power settings to Never?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Setting the screen timeout to Never keeps your PC awake permanently, wasting power and wearing hardware. Insomnia keeps the PC awake only while a trigger is active — the moment all triggers become inactive, normal Windows sleep behavior resumes automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Insomnia work on macOS or Linux?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Insomnia is Windows-only (Windows 10 and Windows 11). It uses Windows-specific APIs: tasklist for process detection, PowerShell for app discovery, and the Windows powerSaveBlocker."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Insomnia free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Insomnia is completely free, open-source, and MIT licensed. There are no accounts, subscriptions, in-app purchases, or telemetry of any kind. Nothing leaves your machine."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I keep my PC awake during a presentation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the manual Keep Awake toggle in Insomnia — flip it on before your presentation starts and off when you're done. You can also add your presentation software as a watched app so the PC stays awake automatically whenever it runs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I install Insomnia?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Download the .exe installer from GitHub Releases (https://github.com/stanley-projects/Insomnia/releases/latest), or install via winget: winget install StanleyProjects.Insomnia, or via Scoop: scoop bucket add stanley-projects https://github.com/stanley-projects/scoop-stanley then scoop install stanley-projects/insomnia."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Insomnia drain my battery?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Insomnia itself is extremely lightweight — it polls tasklist every 10 seconds and checks a few small files every 5 seconds. The sleep prevention it provides does mean your display stays on while triggers are active, which uses more power than sleep. But Insomnia releases the sleep lock automatically when triggers go inactive, so your PC sleeps normally the rest of the time."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple: #7c3aed; --purple-light: #a78bfa; --purple-dark: #5b21b6;
+      --bg: #0f0f13; --surface: #18181f; --border: #2a2a35;
+      --text: #f0f0f5; --muted: #9090a8;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--purple-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-weight: 700; font-size: 1.1rem; }
+    .nav-logo span { color: var(--purple-light); }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-primary { background: var(--purple); color: #fff; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; }
+    .btn-primary:hover { background: var(--purple-dark); text-decoration: none; }
+    .container { max-width: 760px; margin: 0 auto; padding: 3rem 2rem; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .sub { color: var(--muted); margin-bottom: 3rem; font-size: 1.05rem; }
+    .faq-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; background: var(--surface); }
+    .faq-item summary { padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
+    .faq-item summary::after { content: '+'; font-size: 1.2rem; color: var(--purple-light); flex-shrink: 0; }
+    .faq-item[open] summary::after { content: '−'; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item p, .faq-item pre { padding: 0 1.25rem 1rem; color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+    code { background: rgba(124,58,237,0.15); padding: 0.1em 0.35em; border-radius: 4px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; color: var(--purple-light); }
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+    sub { display: block; text-align: center; padding: 1rem 2rem 0; font-size: 0.75rem; color: #555; line-height: 2; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🦉 <span>Insomnia</span></div>
+  <div class="nav-links">
+    <a href="./">Home</a>
+    <a href="https://github.com/stanley-projects/Insomnia">GitHub</a>
+    <a href="https://github.com/stanley-projects/Insomnia/releases/latest" class="btn-primary">Download</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Frequently Asked Questions</h1>
+  <p class="sub">Everything you need to know about Insomnia — the smart Windows sleep prevention utility.</p>
+
+  <details class="faq-item">
+    <summary>How do I keep my Windows PC from sleeping?</summary>
+    <p>Install Insomnia and add a trigger. Use the manual <strong>Keep Awake</strong> toggle for immediate effect, add an application as a watched trigger (stays awake while it runs), or enable an AI integration (stays awake only during active AI work). Insomnia uses Electron's <code>powerSaveBlocker</code> API to prevent Windows from entering sleep mode.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How do I prevent Windows from sleeping during Claude Code sessions?</summary>
+    <p>Enable the <strong>Claude Code</strong> integration in Insomnia. It installs hooks in <code>~/.claude/settings.json</code> that fire on <code>UserPromptSubmit</code>, <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PermissionRequest</code>, and <code>Notification</code> events — keeping Windows awake precisely while Claude is running tools and generating code. The sleep lock is released within 3 minutes after Claude finishes its last action.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia work with Cursor?</summary>
+    <p>Yes. Insomnia polls <code>~/.cursor/projects/*/agent-transcripts/**/*.jsonl</code> every 5 seconds. These files are only written during active <strong>Cursor Agent</strong> sessions, so the PC stays awake only while the Agent is actively working — not just because Cursor is open and idle.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia work with OpenAI Codex?</summary>
+    <p>Yes, via two detection paths: a <code>notify</code> hook in <code>~/.codex/config.toml</code> for CLI usage, and session transcript polling at <code>~/.codex/sessions/**/*.jsonl</code> for VS Code extension and standalone app usage. Both signals are combined so all Codex surfaces are covered.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia work with Aider?</summary>
+    <p>Yes. Aider is detected via process monitoring — Insomnia checks whether <code>aider.exe</code> is running every 10 seconds. There's a 30-second grace period after the process disappears before the sleep lock is released.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia work with Ollama?</summary>
+    <p>Yes. Ollama is detected via process monitoring — Insomnia watches for <code>ollama.exe</code> and <code>ollama_llama_server.exe</code>. The PC stays awake during local model inference and releases within 30 seconds after Ollama stops.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How is Insomnia different from setting Windows power settings to "Never"?</summary>
+    <p>Setting the screen timeout to "Never" keeps your PC awake permanently, wasting power and wearing your hardware. Insomnia keeps the PC awake <em>only</em> while a trigger is active — the moment all triggers go inactive, normal Windows sleep behavior resumes automatically. It's the difference between leaving the lights on all day versus a motion-sensor light.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How do I keep my PC awake during a presentation?</summary>
+    <p>Use the manual <strong>Keep Awake</strong> toggle — flip it on before you present, off when you're done. Alternatively, add your presentation software (PowerPoint, Keynote for Windows, browser) as a watched app so Insomnia keeps the PC awake automatically whenever the app is running.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How do I install Insomnia?</summary>
+    <p>Three options:</p>
+    <p><strong>1. Direct download</strong> — grab the <code>.exe</code> installer from <a href="https://github.com/stanley-projects/Insomnia/releases/latest">GitHub Releases</a> and run it.</p>
+    <p><strong>2. winget</strong> — run <code>winget install StanleyProjects.Insomnia</code> in any terminal.</p>
+    <p><strong>3. Scoop</strong> — run <code>scoop bucket add stanley-projects https://github.com/stanley-projects/scoop-stanley</code> then <code>scoop install stanley-projects/insomnia</code>.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia work on macOS or Linux?</summary>
+    <p>No. Insomnia is Windows-only (Windows 10 and Windows 11). It uses Windows-specific APIs: <code>tasklist</code> for process detection, PowerShell for app discovery, and the Windows <code>powerSaveBlocker</code>. There are no plans for other platforms.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Is Insomnia free?</summary>
+    <p>Yes. Insomnia is completely free, open-source, and MIT licensed. There are no accounts, subscriptions, in-app purchases, or telemetry of any kind. Nothing leaves your machine.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does Insomnia drain my battery?</summary>
+    <p>Insomnia itself is extremely lightweight — it polls <code>tasklist</code> every 10 seconds and checks a few small files every 5 seconds. Sleep prevention does keep your display on, using more power than sleep. But Insomnia releases the sleep lock automatically when all triggers go inactive, so your PC sleeps normally the rest of the time.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Can I add my own application as a trigger?</summary>
+    <p>Yes. Click <strong>+ Add</strong> in the main window, go to the <strong>Apps</strong> tab. Insomnia auto-discovers all installed apps from Start Menu, registry, Microsoft Store, and desktop shortcuts. Search for your app or use "Browse manually…" to select any <code>.exe</code>. Each app has its own enable/disable toggle.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What does the purple owl mean?</summary>
+    <p>The purple owl (eyes open) in the system tray means Insomnia is actively preventing sleep. The grey owl (eyes closed) means no triggers are active and Windows will sleep normally. Hover over the tray icon to see exactly why it's awake: e.g. <em>"Staying awake for — Claude Code"</em> or <em>"Staying awake for — Manually triggered"</em>.</p>
+  </details>
+
+</div>
+
+<footer>
+  <p>
+    <a href="./">Insomnia Home</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia">GitHub</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia/releases/latest">Download</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia/blob/master/LICENSE">MIT License</a>
+  </p>
+</footer>
+
+<sub>keep windows awake · prevent windows from sleeping · stop pc sleep · caffeine windows · keep pc awake during presentation · prevent sleep windows 11 · sleep prevention utility · stay awake windows · windows power settings · no sleep mode · claude code keep awake · cursor keep awake · ai coding sleep prevention</sub>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+/* TEAM */
+Developer: Stanley Projects
+GitHub: https://github.com/stanley-projects
+
+/* SITE */
+Last update: 2026-05-27
+Language: English
+Standards: HTML5, CSS3
+Components: Electron, Node.js
+Software: Insomnia v1.4.2
+
+/* THANKS */
+Built for the developer community.

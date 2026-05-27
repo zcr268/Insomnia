@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Keep Windows Awake — Smart Sleep Prevention for Developers</title>
+  <meta name="description" content="Step-by-step guide: how to keep your Windows 10/11 PC awake during AI coding sessions, presentations, or long tasks — using Insomnia, the free smart caffeine alternative.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="canonical" href="https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/assets/icon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="How to Keep Windows Awake — Smart Sleep Prevention for Developers">
+  <meta property="og:description" content="Step-by-step guide to preventing Windows sleep during AI coding sessions, presentations, and long tasks using Insomnia.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html">
+  <meta property="og:image" content="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/docs/screenshot.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Keep Windows Awake — Smart Sleep Prevention for Developers">
+  <meta name="twitter:description" content="Stop Windows from sleeping during AI coding sessions. Free, open-source, smart.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/stanley-projects/Insomnia/master/docs/screenshot.png">
+
+  <!-- Structured Data: HowTo + Article -->
+  <script type="application/ld+json">
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to keep Windows awake during AI coding sessions",
+      "description": "Prevent your Windows PC from sleeping while Claude Code, Cursor, Aider, or other AI coding tools are running using Insomnia — a free, open-source sleep-prevention utility.",
+      "totalTime": "PT2M",
+      "tool": [
+        { "@type": "HowToTool", "name": "Insomnia — free Windows app" }
+      ],
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Install Insomnia",
+          "text": "Download the .exe installer from https://github.com/stanley-projects/Insomnia/releases/latest and run it. Alternatively, run: winget install StanleyProjects.Insomnia",
+          "url": "https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html#step-1"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Add an AI integration or trigger",
+          "text": "Open Insomnia from the system tray. Click '+ Add', go to the Integrations tab, and enable Claude Code, Cursor, Codex, Aider, or Ollama. Or go to the Apps tab to add any application as a trigger.",
+          "url": "https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html#step-2"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Watch the tray icon",
+          "text": "The purple owl means Insomnia is preventing sleep. The grey owl means no triggers are active. Hover the tray icon to see exactly why the PC is awake.",
+          "url": "https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html#step-3"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "How to Keep Windows Awake During AI Coding Sessions",
+      "description": "A complete guide to preventing Windows sleep while running Claude Code, Cursor, Aider, Codex, or Ollama — using Insomnia, the free smart sleep-prevention utility.",
+      "author": { "@type": "Organization", "name": "Stanley Projects", "url": "https://github.com/stanley-projects" },
+      "datePublished": "2026-05-27",
+      "dateModified": "2026-05-27",
+      "url": "https://stanley-projects.github.io/Insomnia/how-to-keep-windows-awake.html"
+    }
+  ]
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple: #7c3aed; --purple-light: #a78bfa; --purple-dark: #5b21b6;
+      --bg: #0f0f13; --surface: #18181f; --border: #2a2a35;
+      --text: #f0f0f5; --muted: #9090a8;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+    a { color: var(--purple-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-weight: 700; font-size: 1.1rem; }
+    .nav-logo span { color: var(--purple-light); }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-primary { background: var(--purple); color: #fff; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; }
+    .btn-primary:hover { background: var(--purple-dark); text-decoration: none; }
+    .container { max-width: 740px; margin: 0 auto; padding: 3rem 2rem; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; line-height: 1.2; }
+    h2 { font-size: 1.3rem; font-weight: 700; margin: 2.5rem 0 0.75rem; color: var(--text); }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--text); }
+    p { color: var(--muted); margin-bottom: 1rem; }
+    strong { color: var(--text); }
+    ul, ol { color: var(--muted); padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    code { background: rgba(124,58,237,0.15); padding: 0.1em 0.35em; border-radius: 4px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; color: var(--purple-light); }
+    .step-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 1.75rem; margin-bottom: 1.25rem; position: relative; }
+    .step-num { display: inline-block; background: var(--purple); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 99px; margin-bottom: 0.75rem; }
+    .step-block h3 { margin-top: 0; }
+    .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1.25rem; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.875rem; color: var(--purple-light); margin-bottom: 1rem; }
+    .code-block span { color: var(--muted); font-size: 0.78rem; display: block; margin-bottom: 0.2rem; }
+    .callout { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    .callout p { color: var(--text); margin: 0; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-bottom: 1.5rem; }
+    th { text-align: left; padding: 0.6rem 1rem; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
+    td { padding: 0.6rem 1rem; border: 1px solid var(--border); vertical-align: top; color: var(--muted); }
+    td strong { color: var(--text); }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.72rem; font-weight: 600; }
+    .badge-smart { background: rgba(124,58,237,0.2); color: var(--purple-light); border: 1px solid rgba(124,58,237,0.3); }
+    .badge-process { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 3rem; }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+    sub { display: block; text-align: center; padding: 1rem 2rem 0; font-size: 0.75rem; color: #555; line-height: 2; }
+    .hero-meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 2.5rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🦉 <span>Insomnia</span></div>
+  <div class="nav-links">
+    <a href="./">Home</a>
+    <a href="faq.html">FAQ</a>
+    <a href="https://github.com/stanley-projects/Insomnia">GitHub</a>
+    <a href="https://github.com/stanley-projects/Insomnia/releases/latest" class="btn-primary">Download</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <h1>How to Keep Windows Awake During AI Coding Sessions</h1>
+  <p class="hero-meta">2-minute setup · Free · Windows 10 / 11 · Works with Claude Code, Cursor, Aider, Codex, Ollama</p>
+
+  <div class="callout">
+    <p><strong>The short answer:</strong> Install <strong>Insomnia</strong> — a free, open-source Windows app. It keeps your PC awake automatically while AI tools are working and lets it sleep the moment they stop. Setup takes under 2 minutes.</p>
+  </div>
+
+  <h2>The Problem</h2>
+
+  <p>You're running <strong>Claude Code</strong> on a complex refactor. You step away for 10 minutes. Your PC's sleep timeout kicks in, the process dies, and you come back to a broken session.</p>
+
+  <p>The naive fix — setting Windows sleep to "Never" — means your PC never sleeps when you actually want it to, wasting power and draining your battery. You want something smarter: <em>awake while work is happening, asleep when it isn't.</em></p>
+
+  <h2>The Solution: Insomnia</h2>
+
+  <p>Insomnia is a lightweight Windows utility that uses Electron's <code>powerSaveBlocker</code> API to prevent Windows from sleeping. It evaluates whether to stay awake based on three signals:</p>
+
+  <ul>
+    <li><strong>Manual toggle</strong> — you explicitly want the PC awake</li>
+    <li><strong>Process monitoring</strong> — a watched app is running</li>
+    <li><strong>Hook-based sessions</strong> — an AI tool is actively working (not just open)</li>
+  </ul>
+
+  <p>When all signals are inactive, the sleep lock is released and Windows behaves normally.</p>
+
+  <h2 id="step-1">Step 1 — Install Insomnia</h2>
+
+  <div class="step-block">
+    <span class="step-num">Option A</span>
+    <h3>Direct download</h3>
+    <p>Head to <a href="https://github.com/stanley-projects/Insomnia/releases/latest">GitHub Releases</a> and download <code>Insomnia.Setup.x.x.x.exe</code>. Run the installer — it takes about 10 seconds.</p>
+  </div>
+
+  <div class="step-block">
+    <span class="step-num">Option B</span>
+    <h3>winget (Windows Package Manager)</h3>
+    <div class="code-block">winget install StanleyProjects.Insomnia</div>
+  </div>
+
+  <div class="step-block">
+    <span class="step-num">Option C</span>
+    <h3>Scoop</h3>
+    <div class="code-block">
+      <span># Add the bucket once</span>
+      scoop bucket add stanley-projects https://github.com/stanley-projects/scoop-stanley<br>
+      scoop install stanley-projects/insomnia
+    </div>
+  </div>
+
+  <h2 id="step-2">Step 2 — Add a Trigger</h2>
+
+  <p>Open Insomnia from the system tray (or Start Menu). Click <strong>+ Add</strong> in the main window.</p>
+
+  <h3>For AI coding tools — use Integrations</h3>
+
+  <p>Go to the <strong>Integrations</strong> tab and enable the tool you use:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Detection</th>
+        <th>What it does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Claude Code</strong></td>
+        <td><span class="badge badge-smart">Smart</span></td>
+        <td>Awake while Claude is running tools; idle for 3 min = asleep</td>
+      </tr>
+      <tr>
+        <td><strong>Cursor</strong></td>
+        <td><span class="badge badge-smart">Smart</span></td>
+        <td>Awake while Cursor Agent is actively working; idle for 3 min = asleep</td>
+      </tr>
+      <tr>
+        <td><strong>OpenAI Codex</strong></td>
+        <td><span class="badge badge-smart">Smart</span></td>
+        <td>Dual-path: CLI notify hook + session transcript polling</td>
+      </tr>
+      <tr>
+        <td><strong>Aider</strong></td>
+        <td><span class="badge badge-process">Process</span></td>
+        <td>Awake while aider.exe is running; 30s grace after it closes</td>
+      </tr>
+      <tr>
+        <td><strong>Ollama</strong></td>
+        <td><span class="badge badge-process">Process</span></td>
+        <td>Awake while Ollama is running local model inference</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>For presentations, renders, downloads — use Apps</h3>
+
+  <p>Go to the <strong>Apps</strong> tab. Insomnia auto-discovers every installed app on your system. Search for it and click to add. The PC stays awake while that app runs, and sleeps normally when it closes.</p>
+
+  <h3>For instant, on-demand sleep prevention</h3>
+
+  <p>Use the <strong>Keep Awake</strong> toggle in the main window. Flip it on — PC stays awake. Flip it off — PC sleeps normally. Perfect for presentations. Setting persists across restarts.</p>
+
+  <h2 id="step-3">Step 3 — Watch the Tray Icon</h2>
+
+  <p>Insomnia lives in your system tray:</p>
+
+  <ul>
+    <li><strong>🦉 Purple owl (eyes open)</strong> — Staying awake. Hover to see why: <em>"Staying awake for — Claude Code"</em></li>
+    <li><strong>🦉 Grey owl (eyes closed)</strong> — Inactive. Windows will sleep normally.</li>
+  </ul>
+
+  <p>Right-click the tray icon for a quick toggle or to open the main window. Close the window to minimize to tray — Insomnia keeps running.</p>
+
+  <h2>How the Claude Code Integration Works (Details)</h2>
+
+  <p>When you enable Claude Code, Insomnia adds hooks to <code>~/.claude/settings.json</code> that fire on:</p>
+
+  <ul>
+    <li><code>UserPromptSubmit</code>, <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PermissionRequest</code>, <code>Notification</code> → <em>stay awake</em></li>
+    <li><code>SessionEnd</code> → <em>allow sleep</em></li>
+  </ul>
+
+  <p>This means Insomnia knows precisely when Claude is reading files, running commands, and writing code — and when it's just sitting idle waiting for your next prompt. Your PC only stays awake while work is actually happening.</p>
+
+  <h2>How the Cursor Integration Works (Details)</h2>
+
+  <p>Cursor writes <code>~/.cursor/projects/*/agent-transcripts/**/*.jsonl</code> files during active Agent sessions. Insomnia polls these files every 5 seconds. If any transcript file changes in size or modification time, it means Cursor Agent is actively working — and the sleep lock is applied. When the files stop changing, the sleep lock is released within 3 minutes.</p>
+
+  <h2>Alternatives (and why Insomnia is better)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Approach</th><th>Drawback</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows power settings → "Never sleep"</td>
+        <td>PC never sleeps, even when idle. Wastes power, drains battery.</td>
+      </tr>
+      <tr>
+        <td>Screen saver disabled manually</td>
+        <td>Still sleeps when the system timer fires. Not targeted.</td>
+      </tr>
+      <tr>
+        <td>powercfg /change /standby-timeout-ac 0</td>
+        <td>System-wide change. Affects all programs, all the time.</td>
+      </tr>
+      <tr>
+        <td><strong>Insomnia</strong></td>
+        <td><strong>Targeted: awake only when your trigger is active. Automatic release when done.</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Use Cases</h2>
+
+  <ul>
+    <li><strong>AI-assisted coding</strong> — Claude Code, Cursor, Aider, Codex working on long tasks</li>
+    <li><strong>Presentations</strong> — manual toggle before presenting, off when done</li>
+    <li><strong>Video rendering</strong> — watch your video editor process</li>
+    <li><strong>Long downloads</strong> — watch your browser or download manager</li>
+    <li><strong>Compiling / long builds</strong> — watch your IDE</li>
+    <li><strong>Game updates</strong> — watch Steam during large downloads</li>
+    <li><strong>3D printing</strong> — watch your slicer software</li>
+    <li><strong>Local AI inference</strong> — Ollama integration built in</li>
+  </ul>
+
+  <div style="text-align:center; margin-top:3rem;">
+    <a href="https://github.com/stanley-projects/Insomnia/releases/latest" class="btn-primary" style="padding:0.85rem 2rem; font-size:1rem; border-radius:10px;">
+      ↓ Download Insomnia — Free
+    </a>
+    <p style="margin-top:0.75rem; font-size:0.85rem; color: var(--muted);">Windows 10/11 · MIT License · No accounts</p>
+  </div>
+
+</div>
+
+<footer>
+  <p>
+    <a href="./">Insomnia Home</a> ·
+    <a href="faq.html">FAQ</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia">GitHub</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia/releases/latest">Download</a> ·
+    <a href="https://github.com/stanley-projects/Insomnia/blob/master/LICENSE">MIT License</a>
+  </p>
+</footer>
+
+<sub>how to keep windows awake · prevent windows from sleeping · stop pc from sleeping · keep windows 11 awake · prevent sleep during claude code · keep pc on during ai coding · windows caffeine alternative · sleep prevention windows · powerSaveBlocker windows · prevent idle sleep windows · keep display on windows 11 · stay awake windows · disable sleep windows programmatically</sub>
+
+</body>
+</html>

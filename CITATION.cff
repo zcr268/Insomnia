@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Insomnia"
+abstract: "Lightweight Windows utility that prevents your PC from sleeping while AI coding tools (Claude Code, Cursor, Aider, OpenAI Codex, Ollama) or watched applications are running. Uses hook-based integration for precise activity detection — awake while the tool works, asleep within 3 minutes after it stops."
+authors:
+  - name: "Stanley Projects"
+    alias: "stanley-projects"
+    website: "https://github.com/stanley-projects"
+version: "1.4.2"
+date-released: "2026-05-09"
+url: "https://stanley-projects.github.io/Insomnia/"
+repository-code: "https://github.com/stanley-projects/Insomnia"
+license: MIT
+keywords:
+  - windows
+  - sleep-prevention
+  - keep-awake
+  - caffeine
+  - electron
+  - ai-coding
+  - claude-code
+  - cursor
+  - codex
+  - developer-tools
+  - productivity
+  - system-tray

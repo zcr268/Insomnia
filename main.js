@@ -42,8 +42,8 @@ const INTEGRATIONS = [
   {
     id: 'cursor',
     name: 'Cursor',
-    description: 'Keeps PC awake while Cursor is running',
-    hookBased: false,
+    description: 'Keeps PC awake while Cursor Agent is actively working on tasks',
+    hookBased: true,
     processNames: ['cursor.exe'],
     icon: 'cursor'
   },
@@ -270,6 +270,101 @@ function watchSessionFile() {
       setTimeout(watchSessionFile, 5000);
     });
   } catch {}
+}
+
+// ── Cursor Agent Activity Watcher ─────────────────────────────────────────────
+// Cursor writes ~/.cursor/projects/*/agent-transcripts/**/*.jsonl during active
+// Agent sessions. Poll those files every 5s — same approach used for Codex.
+const CURSOR_PROJECTS_DIR = path.join(os.homedir(), '.cursor', 'projects');
+let cursorWatchRetryTimer = null;
+let cursorPollInterval = null;
+let cursorTranscriptSnapshots = new Map();
+
+function getCursorTranscriptFiles() {
+  const files = [];
+  const stack = [CURSOR_PROJECTS_DIR];
+  while (stack.length > 0) {
+    const dir = stack.pop();
+    let entries = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) stack.push(fullPath);
+      else if (entry.isFile() && entry.name.endsWith('.jsonl')) files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function syncCursorTranscriptSnapshots() {
+  for (const filePath of getCursorTranscriptFiles()) {
+    const snapshot = getFileSnapshot(filePath);
+    if (snapshot) cursorTranscriptSnapshots.set(filePath, snapshot);
+  }
+}
+
+function recordCursorActivity() {
+  const isEnabled = config.watchedIntegrations.some(i => i.id === 'cursor' && i.enabled);
+  if (!isEnabled) return;
+  try {
+    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+    let data = { sessions: {} };
+    if (fs.existsSync(SESSIONS_FILE)) {
+      try { data = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8')); } catch {}
+    }
+    if (!data.sessions) data.sessions = {};
+    const key = 'cursor:agent';
+    const nowIso = new Date().toISOString();
+    if (!data.sessions[key]) {
+      data.sessions[key] = { integration: 'cursor', session_id: 'agent', created_at: nowIso };
+    }
+    data.sessions[key].last_activity = nowIso;
+    data.last_updated = nowIso;
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2));
+    checkAgentSessions();
+  } catch {}
+}
+
+function handleCursorTranscriptChange() {
+  let changed = false;
+  const seen = new Set();
+  for (const filePath of getCursorTranscriptFiles()) {
+    seen.add(filePath);
+    const snapshot = getFileSnapshot(filePath);
+    if (!snapshot) continue;
+    if (cursorTranscriptSnapshots.get(filePath) !== snapshot) {
+      cursorTranscriptSnapshots.set(filePath, snapshot);
+      changed = true;
+    }
+  }
+  for (const filePath of Array.from(cursorTranscriptSnapshots.keys())) {
+    if (!seen.has(filePath)) cursorTranscriptSnapshots.delete(filePath);
+  }
+  if (!changed) return;
+  recordCursorActivity();
+}
+
+function scheduleCursorWatchRetry(delayMs) {
+  if (cursorWatchRetryTimer) clearTimeout(cursorWatchRetryTimer);
+  cursorWatchRetryTimer = setTimeout(() => {
+    cursorWatchRetryTimer = null;
+    watchCursorFiles();
+  }, delayMs);
+}
+
+function watchCursorFiles() {
+  stopCursorWatcher();
+  if (!fs.existsSync(CURSOR_PROJECTS_DIR)) {
+    scheduleCursorWatchRetry(30000);
+    return;
+  }
+  syncCursorTranscriptSnapshots();
+  cursorPollInterval = setInterval(handleCursorTranscriptChange, 5000);
+}
+
+function stopCursorWatcher() {
+  if (cursorWatchRetryTimer) { clearTimeout(cursorWatchRetryTimer); cursorWatchRetryTimer = null; }
+  if (cursorPollInterval) { clearInterval(cursorPollInterval); cursorPollInterval = null; }
 }
 
 // ── Codex App / VS Code Activity Watcher ──────────────────────────────────────
@@ -568,11 +663,13 @@ function removeCodexHooks() {
 function setupHooksForIntegration(integrationId) {
   if (integrationId === 'claude-code') setupClaudeCodeHooks();
   else if (integrationId === 'codex-cli') { setupCodexHooks(); watchCodexFiles(); }
+  else if (integrationId === 'cursor') watchCursorFiles();
 }
 
 function removeHooksForIntegration(integrationId) {
   if (integrationId === 'claude-code') removeClaudeCodeHooks();
   else if (integrationId === 'codex-cli') { removeCodexHooks(); stopCodexWatcher(); }
+  else if (integrationId === 'cursor') stopCursorWatcher();
 }
 
 // ── Tray ───────────────────────────────────────────────────────────────────────
@@ -1065,6 +1162,7 @@ app.on('before-quit', () => {
   if (pollInterval) clearInterval(pollInterval);
   if (sessionWatcher) { sessionWatcher.close(); sessionWatcher = null; }
   stopCodexWatcher();
+  stopCursorWatcher();
   if (powerSaveId !== null) {
     powerSaveBlocker.stop(powerSaveId);
     powerSaveId = null;
@@ -1087,6 +1185,9 @@ app.whenReady().then(() => {
       for (const key of Object.keys(data.sessions || {})) {
         if (key.endsWith(':auto-detected')) { delete data.sessions[key]; removed = true; }
         if (key === 'codex-cli:vscode') { delete data.sessions[key]; removed = true; }
+        // Clean up stale cursor:agent entries from pre-hook builds so they don't
+        // cause a false awake window on first launch after upgrade.
+        if (key === 'cursor:agent') { delete data.sessions[key]; removed = true; }
       }
       if (removed) fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2));
     }
@@ -1124,6 +1225,11 @@ app.whenReady().then(() => {
   // Watch Codex session transcripts for VS Code / standalone app activity.
   if (config.watchedIntegrations.some(i => i.id === 'codex-cli' && i.enabled)) {
     watchCodexFiles();
+  }
+
+  // Watch Cursor agent transcripts for active Agent session activity.
+  if (config.watchedIntegrations.some(i => i.id === 'cursor' && i.enabled)) {
+    watchCursorFiles();
   }
 
   if (manualAwake) evaluateState();

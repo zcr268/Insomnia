@@ -1,0 +1,4 @@
+Contact: https://github.com/stanley-projects/Insomnia/issues
+Preferred-Languages: en
+Canonical: https://stanley-projects.github.io/Insomnia/.well-known/security.txt
+Policy: https://github.com/stanley-projects/Insomnia/blob/master/LICENSE

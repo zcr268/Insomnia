@@ -1,5 +1,7 @@
 # Insomnia — Keep Windows Awake During AI Coding Sessions
 
+> **Insomnia is the smart Windows sleep-prevention utility that automatically keeps your PC awake while AI coding tools are actively working — and releases the sleep lock the moment they stop.**
+
 **Prevent your PC from sleeping while Claude Code, Cursor, Aider, or Codex are working.**
 
 Insomnia is a free, lightweight Windows app that keeps your computer awake — automatically when AI coding agents are running, when specific apps are active, or manually with a toggle. A smarter caffeine alternative for developers: no more losing progress to an untimely screen timeout.
@@ -7,6 +9,8 @@ Insomnia is a free, lightweight Windows app that keeps your computer awake — a
 ![Windows](https://img.shields.io/badge/platform-Windows-blue)
 ![Electron](https://img.shields.io/badge/built%20with-Electron-47848f)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![GitHub release](https://img.shields.io/github/v/release/stanley-projects/Insomnia?label=latest)](https://github.com/stanley-projects/Insomnia/releases/latest)
+[![GitHub downloads](https://img.shields.io/github/downloads/stanley-projects/Insomnia/total?label=downloads)](https://github.com/stanley-projects/Insomnia/releases)
 
 ---
 
@@ -27,7 +31,7 @@ Insomnia has built-in support for AI coding tools with two types of monitoring:
 | Integration | Type | How It Works |
 |---|---|---|
 | **Claude Code** | Hook-based | Knows when Claude is *actively working* (not just open). Wakes on tool use, sleeps when idle. |
-| **Cursor** | Process-based | Keeps awake while Cursor is running |
+| **Cursor** | Hook-based | Knows when Cursor Agent is *actively working*. Polls agent transcripts; idle = asleep. |
 | **Aider** | Process-based | Keeps awake while `aider.exe` is running |
 | **OpenAI Codex** | Hook-based | Knows when Codex is *actively working* (CLI, VS Code, or desktop). Uses Codex's `notify` config plus Codex session activity to track active work. |
 | **Ollama** | Process-based | Keeps awake during local AI model inference |
@@ -109,6 +113,10 @@ When you enable the Claude Code integration, Insomnia adds hooks to `~/.claude/s
 
 This means your PC stays awake precisely while Claude is doing work — reading files, running commands, writing code — and goes back to normal the moment it stops. No wasted power, no interrupted sessions.
 
+### Cursor Integration Details
+
+When you enable the Cursor integration, Insomnia polls `~/.cursor/projects/*/agent-transcripts/**/*.jsonl` every 5 seconds. Cursor writes these transcript files during active Agent sessions — they only change when the Agent is actively working, not while Cursor is sitting idle. When Insomnia detects a change, it signals activity and keeps Windows awake. The sleep lock is released within 3 minutes of the last transcript change.
+
 ### OpenAI Codex Integration Details
 
 When you enable the OpenAI Codex integration, Insomnia adds a `notify` hook to `~/.codex/config.toml` for Codex CLI activity. For Codex surfaces that run through the persistent app server, including the VS Code extension and standalone app, Insomnia also watches Codex's local session transcript activity in `~/.codex/sessions`. Codex updates those transcripts during turns, and Insomnia treats those writes as active work without keeping the PC awake just because `codex.exe` is open.
@@ -155,6 +163,36 @@ Pull requests welcome. If you'd like to add an integration for another AI coding
 
 Setting your screen timeout to "Never" or 2+ hours works, but then your PC never sleeps when you actually want it to — wasting power and wearing your hardware. Insomnia keeps your PC awake **only** when something needs it, and automatically steps back when it doesn't. It's like caffeine for your PC, but smarter.
 
+## FAQ
+
+**How do I keep my Windows PC from sleeping?**  
+Install Insomnia and add a trigger — an AI integration, a watched app, or the manual toggle. Insomnia uses Electron's `powerSaveBlocker` API to suppress the Windows sleep timer precisely while a trigger is active.
+
+**Does Insomnia work with Claude Code?**  
+Yes. Enable the Claude Code integration and Insomnia hooks into `~/.claude/settings.json`. Your PC wakes when Claude starts working and sleeps within 3 minutes after it goes idle.
+
+**Does Insomnia work with Cursor?**  
+Yes. Insomnia polls `~/.cursor/projects/*/agent-transcripts/**/*.jsonl` every 5 seconds. These files are only written during active Cursor Agent sessions, so the PC stays awake only while the Agent is working — not just because Cursor is open.
+
+**Does Insomnia work with OpenAI Codex?**  
+Yes, via two paths: a `notify` hook in `~/.codex/config.toml` (CLI) and session transcript polling at `~/.codex/sessions/**/*.jsonl` (VS Code extension and standalone app). All Codex surfaces are covered.
+
+**How is Insomnia different from setting Windows sleep to "Never"?**  
+Setting power settings to "Never" keeps the PC awake permanently. Insomnia keeps it awake *only* while a trigger is active — the moment all triggers go inactive, normal Windows sleep behavior resumes.
+
+**Does it work for presentations, not just AI coding?**  
+Yes. The manual toggle and app-watching features work for any scenario — presentations, video renders, long downloads, 3D printing, game updates, compiling.
+
+**Is Insomnia free?**  
+Yes. Free, open source, MIT licensed. No accounts, no subscriptions, no telemetry.
+
+**Does it work on macOS or Linux?**  
+No. Insomnia is Windows 10/11 only.
+
 ## License
 
 MIT
+
+---
+
+<sub>keep windows awake · prevent windows from sleeping · stop pc from sleeping · caffeine windows · keep pc awake during presentation · prevent sleep windows 11 · sleep prevention utility · stay awake windows · windows power settings · no sleep mode · claude code keep awake · cursor keep awake · ai coding sleep prevention · keep windows awake programmatically · prevent idle sleep windows</sub>
