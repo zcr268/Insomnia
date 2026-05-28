@@ -2,6 +2,7 @@
 const statusDot = document.getElementById('statusDot');
 const statusText = document.getElementById('statusText');
 const manualToggle = document.getElementById('manualToggle');
+const startupToggle = document.getElementById('startupToggle');
 const reasonText = document.getElementById('reasonText');
 const triggerList = document.getElementById('triggerList');
 const emptyMessage = document.getElementById('emptyMessage');
@@ -130,6 +131,14 @@ function renderTriggerList(status) {
 // ── Manual Toggle ──────────────────────────────────────────────────────────────
 manualToggle.addEventListener('change', () => {
   window.insomnia.toggleAwake();
+});
+
+// ── Startup Toggle ─────────────────────────────────────────────────────────────
+window.insomnia.getStartup().then(val => { startupToggle.checked = val; });
+
+startupToggle.addEventListener('change', async () => {
+  const val = await window.insomnia.toggleStartup();
+  startupToggle.checked = val;
 });
 
 // ── Drawer Tabs ────────────────────────────────────────────────────────────────

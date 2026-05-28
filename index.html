@@ -16,17 +16,30 @@
       <span class="status-text" id="statusText">Inactive</span>
     </header>
 
-    <!-- Manual Toggle -->
+    <!-- Manual Toggle + Startup -->
     <section class="toggle-section">
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label">Keep Awake</div>
-          <div class="toggle-sub" id="reasonText">Manually prevent sleep</div>
+      <div class="toggle-card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Keep Awake</div>
+            <div class="toggle-sub" id="reasonText">Manually prevent sleep</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="manualToggle">
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="manualToggle">
-          <span class="slider"></span>
-        </label>
+        <div class="toggle-divider"></div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Launch on startup</div>
+            <div class="toggle-sub">Start automatically when Windows boots</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="startupToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </section>
 
@@ -44,7 +57,7 @@
     </section>
 
     <footer>
-      <span>Insomnia v1.4.2</span>
+      <span>Insomnia v1.4.3</span>
     </footer>
   </div>
 

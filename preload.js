@@ -19,5 +19,9 @@ contextBridge.exposeInMainWorld('insomnia', {
   getAvailableIntegrations: () => ipcRenderer.invoke('get-available-integrations'),
   addIntegration: (id) => ipcRenderer.invoke('add-integration', id),
   removeIntegration: (id) => ipcRenderer.invoke('remove-integration', id),
-  toggleIntegration: (id) => ipcRenderer.invoke('toggle-integration', id)
+  toggleIntegration: (id) => ipcRenderer.invoke('toggle-integration', id),
+
+  // Startup
+  getStartup: () => ipcRenderer.invoke('get-startup'),
+  toggleStartup: () => ipcRenderer.invoke('toggle-startup')
 });

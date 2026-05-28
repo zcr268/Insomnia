@@ -82,7 +82,13 @@ function loadConfig() {
   } catch {}
   if (!config.watchedApps) config.watchedApps = [];
   if (!config.watchedIntegrations) config.watchedIntegrations = [];
+  if (config.launchOnStartup === undefined) config.launchOnStartup = true;
   manualAwake = config.manualAwake || false;
+}
+
+function applyStartupSetting() {
+  if (!app.isPackaged) return;
+  app.setLoginItemSettings({ openAtLogin: config.launchOnStartup });
 }
 
 function saveConfig() {
@@ -1071,6 +1077,16 @@ function setupIPC() {
     return getStatus();
   });
 
+  // Startup setting
+  ipcMain.handle('get-startup', () => config.launchOnStartup);
+
+  ipcMain.handle('toggle-startup', () => {
+    config.launchOnStartup = !config.launchOnStartup;
+    saveConfig();
+    applyStartupSetting();
+    return config.launchOnStartup;
+  });
+
   ipcMain.handle('toggle-integration', (_, integrationId) => {
     const found = config.watchedIntegrations.find(i => i.id === integrationId);
     if (found) {
@@ -1118,7 +1134,7 @@ function setupIPC() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 680,
+    height: 760,
     resizable: false,
     maximizable: false,
     icon: path.join(ASSETS, 'icon.png'),
@@ -1176,6 +1192,7 @@ app.whenReady().then(() => {
   }
 
   loadConfig();
+  applyStartupSetting();
 
   // Clean up stale Codex false-positive entries left behind by older builds.
   try {

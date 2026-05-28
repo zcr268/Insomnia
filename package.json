@@ -1,6 +1,6 @@
 {
   "name": "insomnia-app",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Keep your PC awake when it matters",
   "main": "main.js",
   "author": "Stanley Projects",
