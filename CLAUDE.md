@@ -62,6 +62,7 @@ Suggested note format:
 - [Codex] Added explicit cross-agent memory and communication protocols to this file, plus an `AGENTS.md` entrypoint for Codex-style agents. Current state updated to reflect that v1.4.2 has already been published on GitHub with installer asset `Insomnia.Setup.1.4.2.exe`.
 
 ### 2026-05-28
+- [Claude] v1.4.3 installer built: `dist/Insomnia Setup 1.4.3.exe`. SHA256: 394D25A0BE3DBA6CECA610C8AA3538B32A35D57BAA6F91FBEBB0CB26E25096E8. Needs GitHub Release, Scoop update, winget PR.
 - [Claude] v1.4.3: added launch-on-startup feature. Uses `app.setLoginItemSettings({ openAtLogin })` — Electron's official API, writes to HKCU registry, no elevation required, only applied when `app.isPackaged` so dev runs are never polluted. Default is `true` (applies on first launch for new installs, and for existing users on first launch after upgrade). UI: second toggle row inside a single card in the toggle section, separated from "Keep Awake" by a hairline divider — no separate settings page needed. Config key: `launchOnStartup` in the existing config.json. Window height bumped from 680 → 760 to keep watchlist space. Version bumped 1.4.2 → 1.4.3.
 
 ### 2026-05-27
