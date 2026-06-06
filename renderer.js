@@ -14,8 +14,13 @@ const appGrid = document.getElementById('appGrid');
 const drawerLoading = document.getElementById('drawerLoading');
 const browseBtn = document.getElementById('browseBtn');
 const integrationList = document.getElementById('integrationList');
+const versionText = document.getElementById('versionText');
 
 let installedApps = [];
+
+window.insomnia.getVersion().then(version => {
+  versionText.textContent = `Insomnia v${version}`;
+});
 
 // Integration icon map
 const INTEGRATION_ICONS = {

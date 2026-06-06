@@ -999,6 +999,8 @@ function getStatus() {
 
 // ── IPC Handlers ───────────────────────────────────────────────────────────────
 function setupIPC() {
+  ipcMain.handle('get-version', () => app.getVersion());
+
   ipcMain.handle('get-status', () => getStatus());
 
   ipcMain.handle('toggle-awake', () => {

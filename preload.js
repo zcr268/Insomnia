@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('insomnia', {
   // Status
   getStatus: () => ipcRenderer.invoke('get-status'),
+  getVersion: () => ipcRenderer.invoke('get-version'),
   toggleAwake: () => ipcRenderer.invoke('toggle-awake'),
   onStatusUpdate: (callback) => {
     ipcRenderer.on('status-update', (_, status) => callback(status));
