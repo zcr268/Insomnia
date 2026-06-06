@@ -705,7 +705,7 @@ function createTray() {
   tray.setToolTip('Inactive');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show Insomnia', click: () => { mainWindow.show(); } },
+    { label: 'Show Insomnia', click: showMainWindow },
     { type: 'separator' },
     {
       label: 'Toggle Awake',
@@ -728,7 +728,7 @@ function createTray() {
     }
   ]);
   tray.setContextMenu(contextMenu);
-  tray.on('double-click', () => { mainWindow.show(); });
+  tray.on('double-click', showMainWindow);
 
   // Try to promote tray icon to always-visible on Windows
   promoteTrayIcon();
@@ -1131,12 +1131,28 @@ function setupIPC() {
 }
 
 // ── Window ─────────────────────────────────────────────────────────────────────
+function showMainWindow() {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.setSkipTaskbar(false);
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function hideMainWindowToTray() {
+  if (!mainWindow) return;
+  mainWindow.setSkipTaskbar(true);
+  mainWindow.hide();
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 760,
     resizable: false,
     maximizable: false,
+    show: false,
+    skipTaskbar: true,
     icon: path.join(ASSETS, 'icon.png'),
     title: 'Insomnia',
     webPreferences: {
@@ -1152,7 +1168,14 @@ function createWindow() {
   mainWindow.on('close', (e) => {
     if (!app.isQuitting) {
       e.preventDefault();
-      mainWindow.hide();
+      hideMainWindowToTray();
+    }
+  });
+
+  mainWindow.on('minimize', (e) => {
+    if (!app.isQuitting) {
+      e.preventDefault();
+      hideMainWindowToTray();
     }
   });
 }
@@ -1164,11 +1187,7 @@ if (!gotLock) {
 } else {
   app.on('second-instance', () => {
     // Someone tried to run a second instance — focus our window instead
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.show();
-      mainWindow.focus();
-    }
+    showMainWindow();
   });
 }
 

@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag. Leave empty to use package.json version.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows installer
+        run: npm run build
+
+      - name: Resolve release tag
+        id: release
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            $tag = "${{ github.ref_name }}"
+          } elseif (-not [string]::IsNullOrWhiteSpace("${{ inputs.tag }}")) {
+            $tag = "${{ inputs.tag }}"
+          } else {
+            $pkg = Get-Content package.json | ConvertFrom-Json
+            $tag = "v$($pkg.version)"
+          }
+
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.release.outputs.tag }}"
+          $assets = Get-ChildItem dist -File | Where-Object {
+            $_.Name -like '*.exe' -or
+            $_.Name -like '*.blockmap' -or
+            $_.Name -eq 'latest.yml'
+          } | ForEach-Object { $_.FullName }
+
+          if ($assets.Count -eq 0) {
+            throw "No release assets found in dist."
+          }
+
+          $oldPreference = $ErrorActionPreference
+          $ErrorActionPreference = 'Continue'
+          gh release view $tag *> $null
+          $releaseExists = $LASTEXITCODE -eq 0
+          $ErrorActionPreference = $oldPreference
+
+          if ($releaseExists) {
+            gh release upload $tag @assets --clobber
+          } else {
+            gh release create $tag @assets --target $env:GITHUB_SHA --title $tag --generate-notes
+          }
